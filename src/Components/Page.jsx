@@ -6,7 +6,6 @@ import Lighting from "./Lighting";
 export default function Page() {
   const formRef = useRef(null);
 
-
   return (
     <div className="font-sans text-gray-800">
       {/* Decorative Lights */}
@@ -14,12 +13,14 @@ export default function Page() {
 
       {/* Header */}
       <header className="bg-[#800000] pb-4 pt-0 shadow-md text-center relative z-10">
-        <h1 className="text-3xl font-bold text-white pt-0">Garba Nights</h1>
+        <h1 className="text-4xl text-white pt-0 font-d">
+          Utsav Unlimited
+        </h1>
       </header>
 
       {/* Offer Banner (Marquee Style) */}
       <div className="bg-[#F8EDEB] text-[#7D5A5A] py-2 font-semibold overflow-hidden relative">
-        <div className="whitespace-nowrap animate-marquee">
+        <div className="whitespace-nowrap animate-marquee font-b">
           <span className="mx-10">⚡ Limited Seats Available! Book Now!</span>
           <span className="mx-10">💃 Group Discount for 5+ Members!</span>
           <span className="mx-10">🎶 Live DJ & Special Performances!</span>
@@ -44,11 +45,11 @@ export default function Page() {
 
         {/* Content */}
         <div className="relative z-10 text-center text-white px-6">
-          <h2 className="text-4xl md:text-6xl font-bold mb-6">
+          <h2 className="text-4xl md:text-6xl font-bold mb-20 font-c text-[#FAF3E0] drop-shadow-lg">
             Join the Biggest Garba Night!
           </h2>
-          <a href="#booking">
-            <button className="bg-[#EFD9CE] text-[#7A5C58] px-6 py-3 rounded-lg shadow-md hover:bg-[#e6c7b8] transition">
+          <a href="">
+            <button className="bg-[#EFD9CE] text-[#7A5C58] px-6 py-3 rounded-lg shadow-md hover:bg-[#e6c7b8] transition font-c">
               Book Now
             </button>
           </a>
@@ -61,13 +62,15 @@ export default function Page() {
         className="min-h-screen flex justify-center items-center bg-[#F7F5EB] py-10"
       >
         <div className="bg-white shadow-xl rounded-lg p-8 w-full max-w-lg border border-[#E6D5C3]">
-          <h2 className="text-2xl font-bold text-center mb-6 text-[#A7727D]">
+          <h2 className="text-2xl font-bold text-center mb-6 text-[#A7727D] font-a">
             Book Your Garba Entry
           </h2>
-          <form className="space-y-4">
+          <form className="space-y-4 font-l">
             {/* Name */}
             <div>
-              <label className="block font-semibold mb-1 text-[#7D5A5A]">Name</label>
+              <label className="block font-semibold mb-1 text-[#7D5A5A]">
+                Name
+              </label>
               <input
                 type="text"
                 placeholder="Enter your name"
@@ -78,7 +81,9 @@ export default function Page() {
 
             {/* Age */}
             <div>
-              <label className="block font-semibold mb-1 text-[#7D5A5A]">Age</label>
+              <label className="block font-semibold mb-1 text-[#7D5A5A]">
+                Age
+              </label>
               <input
                 type="number"
                 min="5"
@@ -91,7 +96,9 @@ export default function Page() {
 
             {/* Mobile */}
             <div>
-              <label className="block font-semibold mb-1 text-[#7D5A5A]">Mobile</label>
+              <label className="block font-semibold mb-1 text-[#7D5A5A]">
+                Mobile
+              </label>
               <input
                 type="tel"
                 placeholder="Enter your mobile number"
@@ -102,7 +109,9 @@ export default function Page() {
 
             {/* Gender */}
             <div>
-              <label className="block font-semibold mb-1 text-[#7D5A5A]">Gender</label>
+              <label className="block font-semibold mb-1 text-[#7D5A5A]">
+                Gender
+              </label>
               <select
                 className="w-full border border-[#E6D5C3] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B5838D]"
                 required

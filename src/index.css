@@ -39,3 +39,34 @@
 .animate-bounce-slow {
   animation: bounce-slow 3s infinite;
 }
+
+
+
+.font-a {
+  font-family: "Almendra SC", serif;
+}
+
+.font-b {
+  font-family: "Bitcount Ink", sans-serif;
+}
+
+.font-c {
+  font-family: "Caesar Dressing", cursive;
+}
+
+.font-d {
+  font-family: "Bitcount Grid Double", sans-serif;
+}
+
+.font-l {
+  font-family: "Lacquer", cursive;
+}
+
+.font-q {
+  font-family: "Quintessential", cursive;
+}
+
+.font-u {
+  font-family: "Uncial Antiqua", cursive;
+}
+
