@@ -1,4 +1,4 @@
-// Lighting.jsx
+
 import React from "react";
 
 const Lighting = () => {
