@@ -21,14 +21,12 @@ const generatePass = async (participantId, data, paymentId, totalAmount) => {
     const doc = new jsPDF("l", "mm", [54, 85]);
 
     // BACKGROUND
-    // doc.setFillColor(255, 245, 230);
-    // doc.rect(0, 0, 85, 54, "F");
     doc.addImage(garbaImage, "JPEG", 0, 0, 85, 54);
 
     // SEMI-TRANSPARENT OVERLAY (to darken background for better text visibility)
     doc.setFillColor(0, 0, 0);
     doc.setDrawColor(0, 0, 0);
-    doc.setGState(new doc.GState({ opacity: 0.7 })); 
+    doc.setGState(new doc.GState({ opacity: 0.7 }));
     doc.rect(0, 0, 85, 54, "F");
     doc.setGState(new doc.GState({ opacity: 1 })); // reset opacity for rest
 
@@ -38,15 +36,26 @@ const generatePass = async (participantId, data, paymentId, totalAmount) => {
     doc.addImage(logoImage, "PNG", 2, 1.5, 7, 7);
     doc.setFontSize(9);
     doc.setTextColor(255, 255, 255);
-    doc.text("Utsav Unlimited Garba Night", 42.5, 6.5, { align: "center" });
+    doc.text("Paawan Garba Utsav 2025", 42.5, 6.5, { align: "center" });
 
-    // EVENT BANNER
-    // doc.addImage(garbaImage, "JPEG", 2, 11, 81, 10);
+   doc.setFontSize(5.2);  // smaller font
+doc.setTextColor(200, 200, 200); // lighter gray
+doc.text(
+  "Venue: Shree D Sadan Dharmpal Ji Ka Bada Shahdol MP",
+  42.5,
+  12, // pushed slightly lower so it breathes
+  { align: "center" }
+);
 
     // TITLE
     doc.setFontSize(10.5);
     doc.setTextColor(255, 230, 230);
-    doc.text("ENTRY PASS", 42.5, 15, { align: "center" });
+    doc.text("ENTRY PASS", 42.5, 17, { align: "center" });
+
+    // EVENT DATE (new line below title)
+    doc.setFontSize(7);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Date: 23 & 24 September", 42.5, 21, { align: "center" });
 
     // PARTICIPANT DETAILS
     doc.setFontSize(7);
@@ -59,13 +68,10 @@ const generatePass = async (participantId, data, paymentId, totalAmount) => {
     doc.text(`Payment ID: ${paymentId}`, 4, y);
 
     // QR CODE
-    // QR CODE
-doc.addImage(qrDataUrl, "PNG", 62, 28, 16, 16); // smaller QR, shifted slightly up
-doc.setFontSize(5);
-doc.setTextColor(255, 255, 255);
-doc.text("Scan to Verify", 70, 47, { align: "center" }); // placed below QR
-
-
+    doc.addImage(qrDataUrl, "PNG", 62, 28, 16, 16);
+    doc.setFontSize(5);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Scan to Verify", 70, 47, { align: "center" });
 
     // Return blob for preview
     const pdfBlob = doc.output("blob");
@@ -74,6 +80,7 @@ doc.text("Scan to Verify", 70, 47, { align: "center" }); // placed below QR
     console.error("Error generating card pass:", err);
   }
 };
+
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -87,7 +94,7 @@ const handleSubmit = async (e) => {
     groupSize: parseInt(form.groupSize.value, 10),
   };
 
-  const pricePerPerson = 200;
+  const pricePerPerson = 25;
   const totalAmount = data.groupSize * pricePerPerson;
 
   openRazorpay(
@@ -136,15 +143,17 @@ const handleSubmit = async (e) => {
     <div className="font-sans text-gray-800">
       <Lighting />
       <header className="bg-[#800000] pb-4 pt-0 shadow-md text-center relative z-10">
-        <h1 className="text-4xl text-white pt-0 font-d">Utsav Unlimited</h1>
+        <h1 className="text-4xl text-white pt-0 font-d">Paawan Garba Utsav 2025 </h1>
       </header>
 
       <div className="bg-[#F8EDEB] text-[#7D5A5A] py-2 font-semibold overflow-hidden relative">
         <div className="whitespace-nowrap animate-marquee font-b">
           <span className="mx-10">⚡ Limited Seats Available! Book Now!</span>
-          <span className="mx-10">💃 Group Discount for 5+ Members!</span>
+          <span className="mx-10">💃 Venue: Shree D Sadan Dharmpal Ji Ka Bada Shahdol MP</span>
           <span className="mx-10">🎶 Live DJ & Special Performances!</span>
-          <span className="mx-10">✨ Hurry! Early Bird Offer Ends Soon!</span>
+          <span className="mx-10">✨ Date: 23 & 24 September</span>
+          <span className="mx-10 highlight enhanced">⚡Per Pass Rate: ₹25</span>
+
         </div>
       </div>
 

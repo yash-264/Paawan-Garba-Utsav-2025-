@@ -15,7 +15,7 @@ const participantCollection = collection(db, 'participants');
 export const saveParticipant = async (formData, paymentData = null) => {
   try {
  
-    const participantId = `P${Date.now()}`;
+    const participantId = `PGU${Date.now()}`;
 
    
     const finalData = {

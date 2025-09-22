@@ -30,7 +30,7 @@ export const openRazorpay = async (amount, participantData, onSuccess, onFailure
     key: "rzp_test_RJxRnys2WOTuA5", 
     amount: amount * 100, 
     currency: "INR",
-    name: "Utsav Unlimited Garba Night",
+    name: "Paawan Garba Utsav 2025 ",
     description: "Garba Pass Booking",
     image: logoImage || "",
     handler: function (response) {
