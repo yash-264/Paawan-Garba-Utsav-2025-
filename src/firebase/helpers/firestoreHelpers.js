@@ -70,3 +70,17 @@ export const deleteParticipant = async (participantId) => {
     throw e;
   }
 };
+
+// Count booked Sitting seats
+export const getSittingCount = async () => {
+  const snapshot = await db.collection("participants")
+    .where("passType", "==", "Sitting")
+    .get();
+  let total = 0;
+  snapshot.forEach(doc => {
+    total += doc.data().numberOfPeople;
+  });
+  return total;
+};
+
+

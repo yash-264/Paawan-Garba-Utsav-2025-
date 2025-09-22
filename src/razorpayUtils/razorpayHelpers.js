@@ -26,8 +26,12 @@ export const openRazorpay = async (amount, participantData, onSuccess, onFailure
   };
 
 
+  const tool = import.meta.env.VITE_tool;
+  
+
+  
   const options = {
-    key: "rzp_test_RJxRnys2WOTuA5", 
+    key: tool, 
     amount: amount * 100, 
     currency: "INR",
     name: "Paawan Garba Utsav 2025 ",

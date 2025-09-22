@@ -1,6 +1,9 @@
 import { useRef } from "react";
 import Lighting from "./Lighting";
-import { saveParticipant } from "../firebase/helpers/firestoreHelpers";
+import {
+  saveParticipant,
+  getSittingCount,
+} from "../firebase/helpers/firestoreHelpers";
 import { openRazorpay } from "../razorpayUtils/razorpayHelpers";
 import garbaImage from "../assets/garba.jpg";
 import logoImage from "../assets/logo.png";
@@ -15,18 +18,17 @@ export default function Page() {
     try {
       const qrDataUrl = await QRCode.toDataURL(participantId);
 
-      // Card size: 85mm x 54mm
       const doc = new jsPDF("l", "mm", [54, 85]);
 
       // BACKGROUND
       doc.addImage(garbaImage, "JPEG", 0, 0, 85, 54);
 
-      // SEMI-TRANSPARENT OVERLAY (to darken background for better text visibility)
+      // DARK OVERLAY
       doc.setFillColor(0, 0, 0);
       doc.setDrawColor(0, 0, 0);
       doc.setGState(new doc.GState({ opacity: 0.7 }));
       doc.rect(0, 0, 85, 54, "F");
-      doc.setGState(new doc.GState({ opacity: 1 })); // reset opacity for rest
+      doc.setGState(new doc.GState({ opacity: 1 }));
 
       // HEADER STRIP
       doc.setFillColor(128, 0, 0);
@@ -36,12 +38,12 @@ export default function Page() {
       doc.setTextColor(255, 255, 255);
       doc.text("Paawan Garba Utsav 2025", 42.5, 6.5, { align: "center" });
 
-      doc.setFontSize(5.2); // smaller font
-      doc.setTextColor(200, 200, 200); // lighter gray
+      doc.setFontSize(5.2);
+      doc.setTextColor(200, 200, 200);
       doc.text(
         "Venue: Shree D Sadan Dharmpal Ji Ka Bada Shahdol MP",
         42.5,
-        12, // pushed slightly lower so it breathes
+        12,
         { align: "center" }
       );
 
@@ -50,7 +52,7 @@ export default function Page() {
       doc.setTextColor(255, 230, 230);
       doc.text("ENTRY PASS", 42.5, 17, { align: "center" });
 
-      // EVENT DATE (new line below title)
+      // EVENT DATE
       doc.setFontSize(7);
       doc.setTextColor(255, 255, 255);
       doc.text("Date: 23 & 24 September", 42.5, 21, { align: "center" });
@@ -59,15 +61,13 @@ export default function Page() {
       doc.setFontSize(7);
       doc.setTextColor(255, 255, 255);
       let y = 25;
-      // doc.text(`PID: ${participantId}`, 4, y);
-      // y += 4;
       doc.text(`Name: ${data.name}`, 4, y);
       y += 4;
       doc.text(`Mobile: ${data.mobile}`, 4, y);
       y += 4;
-      doc.text(`No. of People: ${data.groupSize}`, 4, y);
+      doc.text(`No. of People: ${data.numberOfPeople}`, 4, y);
       y += 4;
-      doc.text(`Pass Type: `, 4, y);
+      doc.text(`Pass Type: ${data.passType}`, 4, y);
 
       // QR CODE
       doc.addImage(qrDataUrl, "PNG", 62, 28, 16, 16);
@@ -75,11 +75,10 @@ export default function Page() {
       doc.setTextColor(255, 255, 255);
       doc.text("Scan to Verify", 70, 47, { align: "center" });
 
-      // Return blob for preview
       const pdfBlob = doc.output("blob");
       return URL.createObjectURL(pdfBlob);
     } catch (err) {
-      console.error("Error generating card pass:", err);
+      console.error("Error generating pass:", err);
     }
   };
 
@@ -89,65 +88,89 @@ export default function Page() {
 
     const data = {
       name: form.name.value,
-      age: form.age.value,
       mobile: form.mobile.value,
-      gender: form.gender.value,
-      groupSize: parseInt(form.groupSize.value, 10),
+      passType: form.passType.value,
+      numberOfPeople: parseInt(form.numberOfPeople.value, 10),
     };
 
-    const pricePerPerson = 25;
-    const totalAmount = data.groupSize * pricePerPerson;
-
-    openRazorpay(
-      totalAmount,
-      data,
-      async (paymentResponse) => {
+    try {
+      // Sitting seats availability check
+      if (data.passType === "Sitting") {
+        let currentSittingCount = 0;
         try {
-          // Save participant to Firestore
-          const participantId = await saveParticipant({
-            ...data,
-            paymentId: paymentResponse.razorpay_payment_id,
-            amountPaid: totalAmount,
-            isUsed: false,
-          });
-
-          // Generate Pass & get preview URL
-          const passUrl = await generatePass(
-            participantId,
-            data,
-            paymentResponse.razorpay_payment_id,
-            totalAmount
-          );
-
-          // Open PDF in new tab for preview
-          const previewWindow = window.open(passUrl, "_blank");
-
-          // Trigger auto-download after small delay
-          const link = document.createElement("a");
-          link.href = passUrl;
-          link.download = `GarbaPass_${participantId}.pdf`;
-          link.click();
-
-          form.reset();
+          currentSittingCount = await getSittingCount();
         } catch (err) {
-          console.error(err);
+          console.error("Error fetching sitting count:", err);
         }
-      },
-      (err) => {
-        console.error(err);
+
+        if ((currentSittingCount || 0) + data.numberOfPeople > 500) {
+          alert(
+            "Sorry! Sitting seats are full. Please choose Standing pass or reduce number of people."
+          );
+          return; // Stop booking
+        }
       }
-    );
+
+      // Price logic
+      const pricePerPerson = data.passType === "Sitting" ? 100 : 50;
+      const totalAmount = data.numberOfPeople * pricePerPerson;
+
+      // Open Razorpay
+      openRazorpay(
+        totalAmount,
+        data,
+        async (paymentResponse) => {
+          try {
+            const participantId = await saveParticipant({
+              ...data,
+              paymentId: paymentResponse.razorpay_payment_id,
+              amountPaid: totalAmount,
+              isUsed: false,
+            });
+
+            const passUrl = await generatePass(
+              participantId,
+              data,
+              paymentResponse.razorpay_payment_id,
+              totalAmount
+            );
+
+            window.open(passUrl, "_blank");
+
+            const link = document.createElement("a");
+            link.href = passUrl;
+            link.download = `GarbaPass_${participantId}.pdf`;
+            link.click();
+
+            form.reset();
+          } catch (err) {
+            console.error(err);
+            alert("Error saving participant or generating pass.");
+          }
+        },
+        (err) => {
+          console.error("Razorpay error:", err);
+          alert("Payment failed. Please try again.");
+        }
+      );
+    } catch (err) {
+      console.error("Booking error:", err);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   return (
     <div className="font-sans text-gray-800">
       <Lighting />
+
+      {/* HEADER */}
       <header className="bg-[#800000] pb-4 pt-0 shadow-md text-center relative z-10">
         <h1 className="text-4xl text-white pt-0 font-d">
-          Paawan Garba Utsav 2025{" "}
+          Paawan Garba Utsav 2025
         </h1>
       </header>
 
+      {/* MARQUEE */}
       <div className="bg-[#F8EDEB] text-[#7D5A5A] py-2 font-semibold overflow-hidden relative">
         <div className="whitespace-nowrap animate-marquee font-b">
           <span className="mx-10">⚡ Limited Seats Available! Book Now!</span>
@@ -156,10 +179,10 @@ export default function Page() {
           </span>
           <span className="mx-10">🎶 Live DJ & Special Performances!</span>
           <span className="mx-10">✨ Date: 23 & 24 September</span>
-          {/* <span className="mx-10 highlight enhanced">⚡Per Pass Rate: ₹25</span> */}
         </div>
       </div>
 
+      {/* HERO / BG IMAGE */}
       <section
         id="home"
         className="relative h-screen flex items-center justify-center"
@@ -184,6 +207,7 @@ export default function Page() {
         </div>
       </section>
 
+      {/* BOOKING FORM & PRICING */}
       <section
         id="booking"
         ref={formRef}
@@ -211,7 +235,7 @@ export default function Page() {
                 Pass Type
               </label>
               <select
-                name="seatType"
+                name="passType"
                 required
                 className="w-full border border-[#E6D5C3] rounded-lg px-4 py-2"
               >
@@ -233,25 +257,11 @@ export default function Page() {
             </div>
             <div>
               <label className="block font-semibold mb-1 text-[#7D5A5A]">
-                Gender
-              </label>
-              <select
-                name="gender"
-                required
-                className="w-full border border-[#E6D5C3] rounded-lg px-4 py-2"
-              >
-                <option value="">Select</option>
-                <option>Male</option>
-                <option>Female</option>
-              </select>
-            </div>
-            <div>
-              <label className="block font-semibold mb-1 text-[#7D5A5A]">
                 No. of People
               </label>
               <input
                 type="number"
-                name="groupSize"
+                name="numberOfPeople"
                 min="1"
                 max="10"
                 required
@@ -270,7 +280,9 @@ export default function Page() {
 
         {/* Pricing Card */}
         <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm border border-[#E6D5C3] text-center">
-          <h3 className="text-3xl font-bold text-[#7D5A5A] mb-4 font-q">Pass Rates</h3>
+          <h3 className="text-3xl font-bold text-[#7D5A5A] mb-4 font-q">
+            Pass Rates
+          </h3>
           <div className="space-y-4">
             <div className="p-4 border rounded-lg bg-[#F8EDEB] transition">
               <p className="font-semibold text-[#7A5C58]">Sitting</p>
